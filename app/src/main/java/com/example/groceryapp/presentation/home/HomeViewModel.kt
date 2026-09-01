@@ -2,6 +2,10 @@ package com.example.groceryapp.presentation.home
 
 import androidx.lifecycle.ViewModel
 
-class HomeViewModel : ViewModel() {
-    // Basic Home logic if needed (e.g. user info)
+import com.example.groceryapp.data.repository.AuthRepository
+import com.example.groceryapp.domain.model.User
+import kotlinx.coroutines.flow.Flow
+
+class HomeViewModel(private val authRepository: AuthRepository = AuthRepository()) : ViewModel() {
+    val currentUser: Flow<User?> = authRepository.currentUser
 }

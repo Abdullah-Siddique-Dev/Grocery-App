@@ -20,5 +20,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Smart Grocery App"
-include(":app")
+// include(":app")
 include(":backend")

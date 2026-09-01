@@ -1,17 +1,7 @@
 package com.example.groceryapp.plugins
 
-import com.example.groceryapp.routes.authRoutes
-import com.example.groceryapp.routes.cartRoutes
-import com.example.groceryapp.routes.categoryRoutes
-import com.example.groceryapp.routes.orderRoutes
-import com.example.groceryapp.routes.productRoutes
-import com.example.groceryapp.routes.userRoutes
-import com.example.groceryapp.services.AuthService
-import com.example.groceryapp.services.CartService
-import com.example.groceryapp.services.CategoryService
-import com.example.groceryapp.services.OrderService
-import com.example.groceryapp.services.ProductService
-import com.example.groceryapp.services.UserService
+import com.example.groceryapp.routes.*
+import com.example.groceryapp.services.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -37,7 +27,10 @@ fun Application.configureRouting() {
         categoryRoutes()
         productRoutes()
         cartRoutes()
+        favoriteRoutes()
+        reviewRoutes()
         orderRoutes()
         userRoutes()
+        adminRoutes()
     }
 }

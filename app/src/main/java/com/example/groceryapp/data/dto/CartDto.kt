@@ -9,14 +9,19 @@ data class CartDto(
     val id: String?,
     val userId: String,
     val items: List<CartItemDto>,
+    val total: Double,
     val updatedAt: String
 )
 
 @Serializable
 data class CartItemDto(
     val productId: String,
+    val productName: String,
+    val productImageUrl: String,
     val quantity: Int,
-    val priceAtAdd: Double
+    val price: Double,
+    val subtotal: Double,
+    val stockQuantity: Int
 )
 
 @Serializable

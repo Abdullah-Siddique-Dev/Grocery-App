@@ -32,10 +32,73 @@ class ProductRepository {
     }
 
     suspend fun findById(id: String): Product? {
-        return try {
-            collection.find(Filters.eq("_id", ObjectId(id))).firstOrNull()
-        } catch (e: Exception) {
-            null
+        val bsonId = try { ObjectId(id) } catch (e: Exception) { return null }
+        return collection.find(Filters.eq("_id", bsonId)).firstOrNull()
+    }
+
+    suspend fun create(product: Product): Product {
+        val result = collection.insertOne(product)
+        return product.copy(id = result.insertedId?.asObjectId()?.value?.toHexString())
+    }
+
+    suspend fun update(id: String, product: Product): Product? {
+        val bsonId = try { ObjectId(id) } catch (e: Exception) { return null }
+        val filter = Filters.eq("_id", bsonId)
+        val update = com.mongodb.client.model.Updates.combine(
+            com.mongodb.client.model.Updates.set("name", product.name),
+            com.mongodb.client.model.Updates.set("description", product.description),
+            com.mongodb.client.model.Updates.set("categoryId", product.categoryId),
+            com.mongodb.client.model.Updates.set("price", product.price),
+            com.mongodb.client.model.Updates.set("unit", product.unit),
+            com.mongodb.client.model.Updates.set("imageUrl", product.imageUrl),
+            com.mongodb.client.model.Updates.set("stockQuantity", product.stockQuantity),
+            com.mongodb.client.model.Updates.set("isAvailable", product.isAvailable)
+        )
+        collection.updateOne(filter, update)
+        return findById(id)
+    }
+
+    suspend fun delete(id: String): Boolean {
+        val bsonId = try { ObjectId(id) } catch (e: Exception) { return false }
+        val result = collection.deleteOne(Filters.eq("_id", bsonId))
+        return result.deletedCount > 0
+    }
+
+    suspend fun decrementStock(productId: String, quantity: Int): Boolean {
+        val bsonId = try { ObjectId(productId) } catch (e: Exception) { return false }
+        
+        // Atomic update: only decrement if enough stock exists
+        val result = collection.updateOne(
+            Filters.and(
+                Filters.eq("_id", bsonId),
+                Filters.gte("stockQuantity", quantity)
+            ),
+            com.mongodb.client.model.Updates.inc("stockQuantity", -quantity)
+        )
+        
+        if (result.modifiedCount > 0) {
+            // Check if stock reached zero to auto-set availability
+            val updated = findById(productId)
+            if (updated != null && updated.stockQuantity == 0) {
+                collection.updateOne(Filters.eq("_id", bsonId), com.mongodb.client.model.Updates.set("isAvailable", false))
+            }
+            return true
         }
+        return false
+    }
+
+    suspend fun incrementStock(productId: String, quantity: Int): Boolean {
+        val bsonId = try { ObjectId(productId) } catch (e: Exception) { return false }
+        val result = collection.updateOne(
+            Filters.eq("_id", bsonId),
+            com.mongodb.client.model.Updates.inc("stockQuantity", quantity)
+        )
+        
+        if (result.modifiedCount > 0) {
+            // If we added stock, ensure it's available
+            collection.updateOne(Filters.eq("_id", bsonId), com.mongodb.client.model.Updates.set("isAvailable", true))
+            return true
+        }
+        return false
     }
 }

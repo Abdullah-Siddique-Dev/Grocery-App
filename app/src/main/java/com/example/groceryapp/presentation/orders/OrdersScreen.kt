@@ -22,10 +22,8 @@ fun OrdersScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    // Assuming userId is available globally or passed down. 
-    // For now we'll call loadOrders with a placeholder if successful auth exists.
     LaunchedEffect(Unit) {
-        viewModel.loadOrders("current_user_id") 
+        viewModel.loadOrders() 
     }
 
     Scaffold(
@@ -39,7 +37,7 @@ fun OrdersScreen(
                 is OrdersState.Empty -> Text("No orders found", Modifier.align(Alignment.Center))
                 is OrdersState.Error -> Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(s.message, color = MaterialTheme.colorScheme.error)
-                    Button(onClick = { viewModel.loadOrders("current_user_id") }) { Text("Retry") }
+                    Button(onClick = { viewModel.loadOrders() }) { Text("Retry") }
                 }
                 is OrdersState.Success -> {
                     LazyColumn(

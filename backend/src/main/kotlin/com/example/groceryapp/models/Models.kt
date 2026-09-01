@@ -4,18 +4,37 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 
 @Serializable
+enum class UserRole {
+    CUSTOMER,
+    ADMIN
+}
+
+@Serializable
+data class Address(
+    val fullName: String,
+    val phoneNumber: String,
+    val addressLine: String,
+    val city: String,
+    val postalCode: String
+)
+
+@Serializable
 data class User(
+    @SerialName("_id")
     val id: String? = null,
     val name: String,
     val email: String,
     val passwordHash: String,
     val phoneNumber: String,
-    val address: String,
+    val address: Address? = null,
+    val role: UserRole = UserRole.CUSTOMER,
+    val fcmToken: String? = null,
     val createdAt: String
 )
 
 @Serializable
 data class Category(
+    @SerialName("_id")
     val id: String? = null,
     val name: String,
     val icon: String,
@@ -25,6 +44,7 @@ data class Category(
 
 @Serializable
 data class Product(
+    @SerialName("_id")
     val id: String? = null,
     val name: String,
     val description: String,
@@ -39,6 +59,7 @@ data class Product(
 
 @Serializable
 data class Cart(
+    @SerialName("_id")
     val id: String? = null,
     val userId: String,
     val items: List<CartItem>,
@@ -53,14 +74,39 @@ data class CartItem(
 )
 
 @Serializable
+enum class OrderStatus {
+    PENDING,
+    CONFIRMED,
+    SHIPPED,
+    DELIVERED,
+    CANCELLED
+}
+
+@Serializable
+enum class PaymentMethod {
+    CASH_ON_DELIVERY,
+    ONLINE
+}
+
+@Serializable
+enum class PaymentStatus {
+    PENDING,
+    PAID,
+    FAILED,
+    REFUNDED
+}
+
+@Serializable
 data class Order(
     @SerialName("_id")
     val id: String? = null,
     val userId: String,
     val items: List<OrderItem>,
     val totalAmount: Double,
-    val deliveryAddress: String,
-    val status: String,
+    val deliveryAddress: Address,
+    val status: OrderStatus = OrderStatus.PENDING,
+    val paymentMethod: PaymentMethod = PaymentMethod.CASH_ON_DELIVERY,
+    val paymentStatus: PaymentStatus = PaymentStatus.PENDING,
     val placedAt: String
 )
 
@@ -69,4 +115,46 @@ data class OrderItem(
     val productId: String,
     val quantity: Int,
     val price: Double
+)
+
+@Serializable
+data class OrderRequest(
+    val deliveryAddress: Address,
+    val paymentMethod: PaymentMethod = PaymentMethod.CASH_ON_DELIVERY
+)
+
+@Serializable
+data class UpdateStatusRequest(val status: OrderStatus)
+
+@Serializable
+data class Favorite(
+    @SerialName("_id")
+    val id: String? = null,
+    val userId: String,
+    val productId: String,
+    val createdAt: String
+)
+
+@Serializable
+data class Review(
+    @SerialName("_id")
+    val id: String? = null,
+    val productId: String,
+    val userId: String,
+    val userName: String,
+    val rating: Int,
+    val comment: String,
+    val createdAt: String
+)
+
+@Serializable
+data class ReviewSummary(
+    val averageRating: Double,
+    val totalReviews: Int
+)
+
+@Serializable
+data class ProductReviewsResponse(
+    val summary: ReviewSummary,
+    val reviews: List<Review>
 )

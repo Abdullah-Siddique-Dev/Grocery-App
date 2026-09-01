@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.groceryapp.ui.components.ProductImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,9 +131,24 @@ fun CartItemRow(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            ProductImage(
+                imageUrl = item.productImageUrl,
+                contentDescription = item.productName,
+                modifier = Modifier.size(64.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(16.dp))
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(item.productName, style = MaterialTheme.typography.titleMedium)
                 Text("$${String.format("%.2f", item.price)}", style = MaterialTheme.typography.bodyMedium)
+                if (item.quantity > item.maxStock) {
+                    Text(
+                        "Only ${item.maxStock} in stock", 
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -144,7 +160,10 @@ fun CartItemRow(
                     modifier = Modifier.padding(horizontal = 8.dp),
                     style = MaterialTheme.typography.bodyLarge
                 )
-                IconButton(onClick = onIncrease) {
+                IconButton(
+                    onClick = onIncrease,
+                    enabled = item.quantity < item.maxStock
+                ) {
                     Icon(Icons.Default.Add, contentDescription = "Increase")
                 }
                 Spacer(modifier = Modifier.width(8.dp))

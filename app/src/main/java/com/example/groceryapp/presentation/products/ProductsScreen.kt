@@ -4,6 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.groceryapp.domain.model.Product
+import com.example.groceryapp.ui.components.ProductImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,7 +56,10 @@ fun ProductsScreen(
                 is ProductsState.Success -> {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(s.products) { product ->
-                            ProductItem(product, onClick = { onProductClick(product.id) })
+                            ProductItem(
+                                product = product, 
+                                onClick = { onProductClick(product.id) }
+                            )
                         }
                     }
                 }
@@ -66,6 +73,13 @@ fun ProductItem(product: Product, onClick: () -> Unit) {
     ListItem(
         headlineContent = { Text(product.name) },
         supportingContent = { Text("${product.price} ${product.unit}") },
+        leadingContent = {
+            ProductImage(
+                imageUrl = product.imageUrl,
+                contentDescription = product.name,
+                modifier = Modifier.size(56.dp)
+            )
+        },
         modifier = Modifier.clickable { onClick() }
     )
 }

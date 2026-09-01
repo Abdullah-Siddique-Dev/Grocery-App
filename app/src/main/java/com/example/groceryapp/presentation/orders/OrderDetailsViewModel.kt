@@ -19,6 +19,9 @@ class OrderDetailsViewModel(private val repository: OrderRepository = OrderRepos
     private val _state = MutableStateFlow<OrderDetailsState>(OrderDetailsState.Loading)
     val state: StateFlow<OrderDetailsState> = _state.asStateFlow()
 
+    private val _cancelState = MutableStateFlow<Result<Unit>?>(null)
+    val cancelState: StateFlow<Result<Unit>?> = _cancelState.asStateFlow()
+
     fun loadOrderDetails(orderId: String) {
         viewModelScope.launch {
             _state.value = OrderDetailsState.Loading
@@ -30,5 +33,19 @@ class OrderDetailsViewModel(private val repository: OrderRepository = OrderRepos
                 }
             }
         }
+    }
+
+    fun cancelOrder(orderId: String) {
+        viewModelScope.launch {
+            val result = repository.cancelOrder(orderId)
+            _cancelState.value = result
+            if (result.isSuccess) {
+                loadOrderDetails(orderId)
+            }
+        }
+    }
+
+    fun resetCancelState() {
+        _cancelState.value = null
     }
 }

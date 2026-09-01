@@ -29,7 +29,8 @@ data class UserDto(
     val name: String,
     val email: String,
     val phoneNumber: String,
-    val address: String,
+    val address: Address? = null,
+    val role: UserRole,
     val createdAt: String
 )
 
@@ -46,5 +47,6 @@ fun User.toDto() = UserDto(
     email = email,
     phoneNumber = phoneNumber,
     address = address,
+    role = role,
     createdAt = createdAt
 )

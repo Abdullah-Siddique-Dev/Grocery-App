@@ -15,9 +15,11 @@ import kotlinx.coroutines.launch
 data class CartItemUiState(
     val productId: String,
     val productName: String,
+    val productImageUrl: String,
     val quantity: Int,
     val price: Double,
-    val subtotal: Double
+    val subtotal: Double,
+    val maxStock: Int
 )
 
 sealed class CartState {
@@ -53,17 +55,17 @@ class CartViewModel(
                         // In a real app, we might get product details in the cart response
                         // or fetch them in bulk. Here we'll simulate the mapping.
                         val uiItems = cart.items.map { item ->
-                            // This is a placeholder for fetching product details
                             CartItemUiState(
                                 productId = item.productId,
-                                productName = "Product ${item.productId}", // Placeholder
+                                productName = item.productName,
+                                productImageUrl = item.productImageUrl,
                                 quantity = item.quantity,
-                                price = item.priceAtAdd,
-                                subtotal = item.quantity * item.priceAtAdd
+                                price = item.price,
+                                subtotal = item.subtotal,
+                                maxStock = item.stockQuantity
                             )
                         }
-                        val total = uiItems.sumOf { it.subtotal }
-                        _state.value = CartState.Success(uiItems, total)
+                        _state.value = CartState.Success(uiItems, cart.total)
                     }
                 }.onFailure {
                     _state.value = CartState.Error(it.message ?: "Failed to load cart")

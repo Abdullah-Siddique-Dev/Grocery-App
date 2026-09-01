@@ -16,8 +16,8 @@ fun Route.cartRoutes(cartService: CartService = CartService()) {
         route("/cart") {
             get {
                 val userId = call.principal<JWTPrincipal>()?.subject ?: return@get call.respond(HttpStatusCode.Unauthorized)
-                val cart = cartService.getCart(userId)
-                call.respond(cart)
+                val cartResponse = cartService.getCartResponse(userId)
+                call.respond(cartResponse)
             }
 
             post("/items") {

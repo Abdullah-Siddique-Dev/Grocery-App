@@ -6,10 +6,12 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.groceryapp.presentation.admin.*
 import com.example.groceryapp.presentation.auth.LoginScreen
 import com.example.groceryapp.presentation.auth.RegisterScreen
 import com.example.groceryapp.presentation.cart.CartScreen
 import com.example.groceryapp.presentation.categories.CategoriesScreen
+import com.example.groceryapp.presentation.favorites.FavoritesScreen
 import com.example.groceryapp.presentation.home.HomeScreen
 import com.example.groceryapp.presentation.orders.CheckoutScreen
 import com.example.groceryapp.presentation.orders.OrderDetailsScreen
@@ -50,7 +52,9 @@ fun AppNavigation(navController: NavHostController) {
                 onNavigateToProducts = { navController.navigate(Screen.Products.createRoute()) },
                 onNavigateToCart = { navController.navigate(Screen.Cart.route) },
                 onNavigateToOrders = { navController.navigate(Screen.Orders.route) },
-                onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                onNavigateToFavorites = { navController.navigate(Screen.Favorites.route) },
+                onNavigateToAdmin = { navController.navigate(Screen.AdminDashboard.route) }
             )
         }
         composable(Screen.Categories.route) {
@@ -132,6 +136,67 @@ fun AppNavigation(navController: NavHostController) {
                 },
                 onBack = { navController.popBackStack() }
             )
+        }
+        composable(Screen.Favorites.route) {
+            FavoritesScreen(
+                onProductClick = { productId ->
+                    navController.navigate(Screen.ProductDetails.createRoute(productId))
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Admin
+        composable(Screen.AdminDashboard.route) {
+            AdminDashboardScreen(
+                onNavigateToOrders = { navController.navigate(Screen.AdminOrders.route) },
+                onNavigateToProducts = { navController.navigate(Screen.AdminProducts.route) },
+                onNavigateToCategories = { navController.navigate(Screen.AdminCategories.route) },
+                onNavigateToUsers = { navController.navigate(Screen.AdminUsers.route) },
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.AdminOrders.route) {
+            AdminOrdersScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Screen.AdminProducts.route) {
+            AdminProductsScreen(
+                onEditProduct = { productId ->
+                    navController.navigate(Screen.AdminProductEdit.createRoute(productId))
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screen.AdminProductEdit.route,
+            arguments = listOf(navArgument("productId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId") ?: "new"
+            AdminProductEditScreen(
+                productId = productId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.AdminCategories.route) {
+            AdminCategoriesScreen(
+                onEditCategory = { categoryId ->
+                    navController.navigate(Screen.AdminCategoryEdit.createRoute(categoryId))
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(
+            route = Screen.AdminCategoryEdit.route,
+            arguments = listOf(navArgument("categoryId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val categoryId = backStackEntry.arguments?.getString("categoryId") ?: "new"
+            AdminCategoryEditScreen(
+                categoryId = categoryId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.AdminUsers.route) {
+            AdminUsersScreen(onBack = { navController.popBackStack() })
         }
     }
 }

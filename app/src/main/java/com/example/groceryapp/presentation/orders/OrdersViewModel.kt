@@ -20,10 +20,10 @@ class OrdersViewModel(private val repository: OrderRepository = OrderRepository(
     private val _state = MutableStateFlow<OrdersState>(OrdersState.Loading)
     val state: StateFlow<OrdersState> = _state.asStateFlow()
 
-    fun loadOrders(userId: String) {
+    fun loadOrders() {
         viewModelScope.launch {
             _state.value = OrdersState.Loading
-            repository.getOrderHistory(userId).collect { result ->
+            repository.getOrderHistory().collect { result ->
                 result.onSuccess { list ->
                     _state.value = if (list.isEmpty()) OrdersState.Empty else OrdersState.Success(list)
                 }.onFailure {

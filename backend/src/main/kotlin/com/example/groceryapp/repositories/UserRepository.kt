@@ -1,9 +1,11 @@
 package com.example.groceryapp.repositories
 
 import com.example.groceryapp.database.AppDatabase
+import com.example.groceryapp.models.Address
 import com.example.groceryapp.models.User
 import com.mongodb.client.model.Filters
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.toList
 import org.bson.types.ObjectId
 
 class UserRepository {
@@ -15,11 +17,12 @@ class UserRepository {
     }
 
     suspend fun findById(id: String): User? {
-        return try {
-            collection.find(Filters.eq("_id", ObjectId(id))).firstOrNull()
-        } catch (e: Exception) {
-            null
-        }
+        val bsonId = try { ObjectId(id) } catch (e: Exception) { return null }
+        return collection.find(Filters.eq("_id", bsonId)).firstOrNull()
+    }
+
+    suspend fun findAll(): List<User> {
+        return collection.find().toList()
     }
 
     suspend fun create(user: User): User {
@@ -27,7 +30,7 @@ class UserRepository {
         return user.copy(id = result.insertedId?.asObjectId()?.value?.toHexString())
     }
 
-    suspend fun update(id: String, name: String, phoneNumber: String, address: String): User? {
+    suspend fun update(id: String, name: String, phoneNumber: String, address: Address?): User? {
         val bsonId = try { ObjectId(id) } catch (e: Exception) { return null }
         val filter = Filters.eq("_id", bsonId)
         val update = com.mongodb.client.model.Updates.combine(
@@ -37,5 +40,22 @@ class UserRepository {
         )
         collection.updateOne(filter, update)
         return findById(id)
+    }
+
+    suspend fun updateAddress(id: String, address: Address): User? {
+        val bsonId = try { ObjectId(id) } catch (e: Exception) { return null }
+        val filter = Filters.eq("_id", bsonId)
+        val update = com.mongodb.client.model.Updates.set("address", address)
+        collection.updateOne(filter, update)
+        return findById(id)
+    }
+
+    suspend fun updateFcmToken(id: String, token: String?): Boolean {
+        val bsonId = try { ObjectId(id) } catch (e: Exception) { return false }
+        val result = collection.updateOne(
+            Filters.eq("_id", bsonId),
+            com.mongodb.client.model.Updates.set("fcmToken", token)
+        )
+        return result.modifiedCount > 0
     }
 }

@@ -28,7 +28,13 @@ class AuthService(
             email = request.email,
             passwordHash = passwordHash,
             phoneNumber = request.phoneNumber,
-            address = request.address,
+            address = Address(
+                fullName = request.name,
+                phoneNumber = request.phoneNumber,
+                addressLine = request.address,
+                city = "",
+                postalCode = ""
+            ),
             createdAt = Instant.now().toString()
         )
 
@@ -55,6 +61,7 @@ class AuthService(
             .withAudience(jwtAudience)
             .withIssuer(jwtIssuer)
             .withSubject(user.id)
+            .withClaim("role", user.role.name)
             .withExpiresAt(Date(System.currentTimeMillis() + 3600000 * 24)) // 24 hours
             .sign(Algorithm.HMAC256(jwtSecret))
     }

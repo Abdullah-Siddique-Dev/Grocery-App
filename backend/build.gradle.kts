@@ -24,6 +24,7 @@ dependencies {
     implementation(libs.mongodb.driver.kotlin.coroutine)
     implementation(libs.mongodb.bson.kotlinx)
     implementation(libs.bcrypt)
+    implementation(libs.firebase.admin)
 }
 
 java {

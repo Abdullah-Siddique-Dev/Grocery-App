@@ -9,10 +9,10 @@ import org.bson.codecs.kotlinx.KotlinSerializerCodecProvider
 
 import org.slf4j.LoggerFactory
 
-object MongoDatabase {
+object AppDatabase {
     private val logger = LoggerFactory.getLogger(javaClass)
     private var client: MongoClient? = null
-    private var mongoDatabase: MongoDatabase? = null
+    private var mongoDatabase: com.mongodb.kotlin.client.coroutine.MongoDatabase? = null
 
     fun init(application: Application) {
         val uri = application.environment.config.property("mongodb.uri").getString()
@@ -20,7 +20,7 @@ object MongoDatabase {
         
         val codecRegistry = CodecRegistries.fromRegistries(
             MongoClientSettings.getDefaultCodecRegistry(),
-            CodecRegistries.fromProviders(CodecRegistries.fromProviders(KotlinSerializerCodecProvider()))
+            CodecRegistries.fromProviders(KotlinSerializerCodecProvider())
         )
 
         client = MongoClient.create(uri)
@@ -29,7 +29,7 @@ object MongoDatabase {
         logger.info("Connected to MongoDB at $uri, database: $dbName with Kotlin Serialization support")
     }
 
-    fun getDatabase(): MongoDatabase {
+    fun getDatabase(): com.mongodb.kotlin.client.coroutine.MongoDatabase {
         return mongoDatabase ?: throw IllegalStateException("Database not initialized")
     }
 
