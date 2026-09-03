@@ -2,6 +2,37 @@ package com.example.groceryapp.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.ExperimentalSerializationApi
+import org.bson.codecs.kotlinx.BsonDecoder
+import org.bson.codecs.kotlinx.BsonEncoder
+import org.bson.types.ObjectId
+
+@OptIn(ExperimentalSerializationApi::class)
+object BsonIdSerializer : KSerializer<String> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("BsonId", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: String) {
+        if (encoder is BsonEncoder) {
+            encoder.encodeObjectId(ObjectId(value))
+        } else {
+            encoder.encodeString(value)
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): String {
+        return if (decoder is BsonDecoder) {
+            decoder.decodeObjectId().toString()
+        } else {
+            decoder.decodeString()
+        }
+    }
+}
 
 @Serializable
 enum class UserRole {
@@ -20,6 +51,7 @@ data class Address(
 
 @Serializable
 data class User(
+    @Serializable(with = BsonIdSerializer::class)
     @SerialName("_id")
     val id: String? = null,
     val name: String,
@@ -34,6 +66,7 @@ data class User(
 
 @Serializable
 data class Category(
+    @Serializable(with = BsonIdSerializer::class)
     @SerialName("_id")
     val id: String? = null,
     val name: String,
@@ -44,6 +77,7 @@ data class Category(
 
 @Serializable
 data class Product(
+    @Serializable(with = BsonIdSerializer::class)
     @SerialName("_id")
     val id: String? = null,
     val name: String,
@@ -59,6 +93,7 @@ data class Product(
 
 @Serializable
 data class Cart(
+    @Serializable(with = BsonIdSerializer::class)
     @SerialName("_id")
     val id: String? = null,
     val userId: String,
@@ -98,6 +133,7 @@ enum class PaymentStatus {
 
 @Serializable
 data class Order(
+    @Serializable(with = BsonIdSerializer::class)
     @SerialName("_id")
     val id: String? = null,
     val userId: String,
@@ -128,6 +164,7 @@ data class UpdateStatusRequest(val status: OrderStatus)
 
 @Serializable
 data class Favorite(
+    @Serializable(with = BsonIdSerializer::class)
     @SerialName("_id")
     val id: String? = null,
     val userId: String,
@@ -137,6 +174,7 @@ data class Favorite(
 
 @Serializable
 data class Review(
+    @Serializable(with = BsonIdSerializer::class)
     @SerialName("_id")
     val id: String? = null,
     val productId: String,

@@ -1,0 +1,7 @@
+
+> Configure project :backend
+w: file:///D:/Grocerey%20App/backend/build.gradle.kts:36:5: 'kotlinOptions(KotlinJvmOptionsDeprecated /* = KotlinJvmOptions */.() -> Unit): Unit' is deprecated. Please migrate to the compilerOptions DSL. More details are here: https://kotl.in/u1r8ln
+
+> Task :backend:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :backend:compileKotlin FAILED
+1 actionable task: 1 executed
