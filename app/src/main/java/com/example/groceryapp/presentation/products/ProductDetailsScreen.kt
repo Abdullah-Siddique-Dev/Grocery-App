@@ -30,8 +30,11 @@ fun ProductDetailsScreen(
     val reviewsState by viewModel.reviewsState.collectAsState()
     val isAddedToCart by viewModel.isAddedToCart.collectAsState()
     val isFavorited by viewModel.isFavorited.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState(initial = null)
 
     var showReviewDialog by remember { mutableStateOf(false) }
+    var editingReview by remember { mutableStateOf<Review?>(null) }
+    var showDeleteConfirmation by remember { mutableStateOf<Review?>(null) }
 
     LaunchedEffect(productId) {
         viewModel.loadProduct(productId)
@@ -165,7 +168,12 @@ fun ProductDetailsScreen(
                                     item { Text("No reviews yet. Be the first to review!", modifier = Modifier.padding(16.dp)) }
                                 } else {
                                     items(r.reviews.reviews) { review ->
-                                        ReviewItem(review)
+                                        ReviewItem(
+                                            review = review,
+                                            isOwnReview = currentUser?.id == review.userId,
+                                            onEdit = { editingReview = review },
+                                            onDelete = { showDeleteConfirmation = review }
+                                        )
                                     }
                                 }
                             }
@@ -196,12 +204,57 @@ fun ProductDetailsScreen(
             }
         )
     }
+
+    if (editingReview != null) {
+        ReviewDialog(
+            initialRating = editingReview!!.rating,
+            initialComment = editingReview!!.comment,
+            isEdit = true,
+            onDismiss = { editingReview = null },
+            onSubmit = { rating, comment ->
+                viewModel.updateReview(productId, editingReview!!.id, rating, comment)
+                editingReview = null
+            }
+        )
+    }
+
+    if (showDeleteConfirmation != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = null },
+            title = { Text("Delete Review") },
+            text = { Text("Are you sure you want to delete this review? This action cannot be undone.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteReview(productId, showDeleteConfirmation!!.id)
+                        showDeleteConfirmation = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
-fun ReviewItem(review: Review) {
+fun ReviewItem(
+    review: Review,
+    isOwnReview: Boolean = false,
+    onEdit: () -> Unit = {},
+    onDelete: () -> Unit = {}
+) {
     Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(review.userName, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.weight(1f))
             Text(review.createdAt.take(10), style = MaterialTheme.typography.bodySmall)
@@ -217,23 +270,55 @@ fun ReviewItem(review: Review) {
             }
         }
         Text(review.comment, style = MaterialTheme.typography.bodyMedium)
+        
+        if (isOwnReview) {
+            Row(
+                modifier = Modifier.padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                TextButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Edit")
+                }
+                TextButton(
+                    onClick = onDelete,
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Delete")
+                }
+            }
+        }
+        
         HorizontalDivider(modifier = Modifier.padding(top = 16.dp), thickness = 0.5.dp)
     }
 }
 
 @Composable
-fun ReviewDialog(onDismiss: () -> Unit, onSubmit: (Int, String) -> Unit) {
-    var rating by remember { mutableStateOf(5) }
-    var comment by remember { mutableStateOf("") }
+fun ReviewDialog(
+    initialRating: Int = 5,
+    initialComment: String = "",
+    isEdit: Boolean = false,
+    onDismiss: () -> Unit,
+    onSubmit: (Int, String) -> Unit
+) {
+    var rating by remember { mutableStateOf(initialRating) }
+    var comment by remember { mutableStateOf(initialComment) }
+    var ratingError by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Write a Review") },
+        title = { Text(if (isEdit) "Edit Review" else "Write a Review") },
         text = {
             Column {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                     repeat(5) { index ->
-                        IconButton(onClick = { rating = index + 1 }) {
+                        IconButton(onClick = { 
+                            rating = index + 1
+                            ratingError = false
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.Star,
                                 contentDescription = null,
@@ -242,21 +327,44 @@ fun ReviewDialog(onDismiss: () -> Unit, onSubmit: (Int, String) -> Unit) {
                         }
                     }
                 }
+                if (ratingError) {
+                    Text(
+                        "Rating must be between 1 and 5",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
                 OutlinedTextField(
                     value = comment,
                     onValueChange = { comment = it },
                     label = { Text("Your Comment") },
                     modifier = Modifier.fillMaxWidth(),
-                    minLines = 3
+                    minLines = 3,
+                    isError = comment.isBlank()
                 )
+                if (comment.isBlank()) {
+                    Text(
+                        "Comment is required",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 16.dp, top = 4.dp)
+                    )
+                }
             }
         },
         confirmButton = {
             Button(
-                onClick = { onSubmit(rating, comment) },
-                enabled = comment.isNotBlank()
+                onClick = {
+                    if (rating in 1..5 && comment.isNotBlank()) {
+                        onSubmit(rating, comment)
+                    } else {
+                        ratingError = rating !in 1..5
+                    }
+                },
+                enabled = comment.isNotBlank() && rating in 1..5
             ) {
-                Text("Submit")
+                Text(if (isEdit) "Update" else "Submit")
             }
         },
         dismissButton = {

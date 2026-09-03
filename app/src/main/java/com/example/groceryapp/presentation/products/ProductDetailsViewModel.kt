@@ -30,7 +30,8 @@ class ProductDetailsViewModel(
     private val repository: ProductRepository = ProductRepository(),
     private val cartRepository: CartRepository = CartRepository(),
     private val favoriteRepository: FavoriteRepository = FavoriteRepository(),
-    private val reviewRepository: ReviewRepository = ReviewRepository()
+    private val reviewRepository: ReviewRepository = ReviewRepository(),
+    private val authRepository: com.example.groceryapp.data.repository.AuthRepository = com.example.groceryapp.data.repository.AuthRepository()
 ) : ViewModel() {
     private val _state = MutableStateFlow<ProductDetailsState>(ProductDetailsState.Loading)
     val state: StateFlow<ProductDetailsState> = _state.asStateFlow()
@@ -43,6 +44,8 @@ class ProductDetailsViewModel(
 
     private val _isFavorited = MutableStateFlow(false)
     val isFavorited: StateFlow<Boolean> = _isFavorited.asStateFlow()
+
+    val currentUser = authRepository.currentUser
 
     fun loadProduct(productId: String) {
         viewModelScope.launch {
