@@ -1,51 +1,50 @@
 package com.example.groceryapp.services
 
-import com.example.groceryapp.models.*
+import com.example.groceryapp.models.Address
+import com.example.groceryapp.models.User
+import com.example.groceryapp.models.UserUpdateRequest
+import com.example.groceryapp.models.toDto
 import com.example.groceryapp.repositories.UserRepository
 
-class UserService(private val userRepository: UserRepository = UserRepository()) {
+class UserService(private val repository: UserRepository = UserRepository()) {
 
-    suspend fun getUserProfile(userId: String): Result<UserDto> {
-        val user = userRepository.findById(userId) ?: return Result.failure(Exception("User not found"))
-        return Result.success(user.toDto())
+    suspend fun getUserProfile(userId: String): Result<User> {
+        val user = repository.findById(userId) 
+            ?: return Result.failure(Exception("User not found"))
+        return Result.success(user)
     }
 
-    suspend fun updateProfile(userId: String, request: UserUpdateRequest): Result<UserDto> {
-        if (request.name.isBlank() || request.phoneNumber.isBlank()) {
-            return Result.failure(Exception("Name and phone number are required"))
-        }
-
-        val updatedUser = userRepository.update(
-            id = userId,
-            name = request.name,
+    suspend fun updateProfile(userId: String, request: UserUpdateRequest): Result<User> {
+        val address = Address(
+            fullName = request.name,
             phoneNumber = request.phoneNumber,
-            address = null 
-        ) ?: return Result.failure(Exception("Failed to update profile"))
-
-        return Result.success(updatedUser.toDto())
+            addressLine = request.address,
+            city = "",
+            postalCode = ""
+        )
+        val updated = repository.update(userId, request.name, request.phoneNumber, address)
+            ?: return Result.failure(Exception("Failed to update profile"))
+        return Result.success(updated)
     }
 
-    suspend fun updateAddress(userId: String, address: Address): Result<UserDto> {
-        if (address.addressLine.isBlank() || address.city.isBlank()) {
-            return Result.failure(Exception("Address and City are required"))
-        }
-
-        val updatedUser = userRepository.updateAddress(userId, address) 
+    suspend fun updateAddress(userId: String, address: Address): Result<User> {
+        val updated = repository.updateAddress(userId, address)
             ?: return Result.failure(Exception("Failed to update address"))
-            
-        return Result.success(updatedUser.toDto())
+        return Result.success(updated)
     }
 
     suspend fun updateFcmToken(userId: String, token: String?): Result<Unit> {
-        val success = userRepository.updateFcmToken(userId, token)
-        return if (success) Result.success(Unit) else Result.failure(Exception("Failed to update token"))
+        val success = repository.updateFcmToken(userId, token)
+        return if (success) Result.success(Unit)
+        else Result.failure(Exception("Failed to update FCM token"))
     }
 
     suspend fun getFcmToken(userId: String): String? {
-        return userRepository.findById(userId)?.fcmToken
+        val user = repository.findById(userId)
+        return user?.fcmToken
     }
 
-    suspend fun getAllUsers(): List<UserDto> {
-        return userRepository.findAll().map { it.toDto() }
+    suspend fun getAllUsers(): List<User> {
+        return repository.findAll()
     }
 }

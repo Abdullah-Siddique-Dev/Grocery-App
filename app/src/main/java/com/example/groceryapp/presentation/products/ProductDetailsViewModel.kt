@@ -89,6 +89,14 @@ class ProductDetailsViewModel(
         }
     }
 
+    fun updateReview(productId: String, reviewId: String, rating: Int, comment: String) {
+        viewModelScope.launch {
+            reviewRepository.updateReview(productId, reviewId, rating, comment).onSuccess {
+                loadReviews(productId)
+            }
+        }
+    }
+
     fun deleteReview(productId: String, reviewId: String) {
         viewModelScope.launch {
             reviewRepository.deleteReview(productId, reviewId).onSuccess {

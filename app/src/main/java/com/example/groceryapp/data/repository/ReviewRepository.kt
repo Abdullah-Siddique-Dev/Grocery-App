@@ -6,11 +6,7 @@ import com.example.groceryapp.data.network.InMemoryTokenProvider
 import com.example.groceryapp.domain.model.ProductReviews
 import com.example.groceryapp.domain.model.Review
 import io.ktor.client.call.body
-import io.ktor.client.request.delete
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.put
-import io.ktor.client.request.setBody
+import io.ktor.client.request.*
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.flow.Flow
@@ -19,12 +15,13 @@ import kotlinx.coroutines.flow.flow
 class ReviewRepository(
     private val apiClient: ApiClient = ApiClient(InMemoryTokenProvider.getInstance())
 ) {
-
+    
     fun getProductReviews(productId: String): Flow<Result<ProductReviews>> = flow {
         try {
             val response = apiClient.client.get("/products/$productId/reviews")
             if (response.status.value in 200..299) {
-                emit(Result.success(response.body<ProductReviewsResponseDto>().toDomain()))
+                val dto = response.body<ProductReviewsResponseDto>()
+                emit(Result.success(dto.toDomain()))
             } else {
                 emit(Result.failure(Exception("Failed to fetch reviews: ${response.status}")))
             }
