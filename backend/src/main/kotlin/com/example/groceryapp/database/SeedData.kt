@@ -16,28 +16,29 @@ object SeedData {
 
         // 1. Seed Dummy User
         val dummyEmail = "admin@example.com"
-        val existingUser = usersCollection.find(Filters.eq("email", dummyEmail)).firstOrNull()
         
-        if (existingUser == null) {
-            val passwordHash = BCrypt.withDefaults().hashToString(12, "admin123".toCharArray())
-            val dummyUser = User(
-                name = "Admin User",
-                email = dummyEmail,
-                passwordHash = passwordHash,
+        // Delete any existing admin user to ensure clean data
+        usersCollection.deleteMany(Filters.eq("email", dummyEmail))
+        
+        // Create fresh admin user
+        val passwordHash = BCrypt.withDefaults().hashToString(12, "admin123".toCharArray())
+        val dummyUser = User(
+            name = "Admin User",
+            email = dummyEmail,
+            passwordHash = passwordHash,
+            phoneNumber = "1234567890",
+            address = Address(
+                fullName = "Admin User",
                 phoneNumber = "1234567890",
-                address = Address(
-                    fullName = "Admin User",
-                    phoneNumber = "1234567890",
-                    addressLine = "123 Main St",
-                    city = "City",
-                    postalCode = "12345"
-                ),
-                role = UserRole.ADMIN,
-                createdAt = Instant.now().toString()
-            )
-            usersCollection.insertOne(dummyUser)
-            println("Dummy user seeded: $dummyEmail / admin123")
-        }
+                addressLine = "123 Main St",
+                city = "City",
+                postalCode = "12345"
+            ),
+            role = UserRole.ADMIN,
+            createdAt = Instant.now().toString()
+        )
+        usersCollection.insertOne(dummyUser)
+        println("Admin user seeded: $dummyEmail / admin123")
 
         // 2. Seed Categories
         if (categoriesCollection.countDocuments() == 0L) {

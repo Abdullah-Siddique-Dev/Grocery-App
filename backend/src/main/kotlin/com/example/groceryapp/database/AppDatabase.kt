@@ -26,7 +26,9 @@ object AppDatabase {
         client = MongoClient.create(uri)
         mongoDatabase = client?.getDatabase(dbName)?.withCodecRegistry(codecRegistry)
         
-        logger.info("Connected to MongoDB at $uri, database: $dbName with Kotlin Serialization support")
+        // Redact credentials from URI for logging
+        val redactedUri = uri.replace(Regex("://[^:]+:[^@]+@"), "://***:***@")
+        logger.info("Connected to MongoDB at $redactedUri, database: $dbName with Kotlin Serialization support")
     }
 
     fun getDatabase(): com.mongodb.kotlin.client.coroutine.MongoDatabase {

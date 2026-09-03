@@ -15,4 +15,14 @@ local.properties
 
 # OS
 .DS_Store
-Thumbs.db*.log
+Thumbs.db
+
+# Logs
+*.log
+backend_run*.log
+
+# Secrets
+firebase-service-account.json
+*.env
+.env.*
+secrets.properties
