@@ -55,7 +55,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val channelId = "order_status_channel"
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
             .setContentText(body)
             .setAutoCancel(true)

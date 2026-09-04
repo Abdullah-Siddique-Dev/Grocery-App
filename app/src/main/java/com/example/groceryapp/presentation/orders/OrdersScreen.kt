@@ -66,7 +66,7 @@ fun OrderItemRow(order: Order, onClick: () -> Unit) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text("Order #${order.id.takeLast(6)}", fontWeight = FontWeight.Bold)
-                Text(order.status, color = MaterialTheme.colorScheme.primary)
+                Text(order.status.name, color = MaterialTheme.colorScheme.primary)
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text("Placed on: ${order.placedAt}")

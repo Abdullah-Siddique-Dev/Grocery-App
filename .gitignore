@@ -23,6 +23,7 @@ backend_run*.log
 
 # Secrets
 firebase-service-account.json
+google-services.json
 *.env
 .env.*
 secrets.properties
