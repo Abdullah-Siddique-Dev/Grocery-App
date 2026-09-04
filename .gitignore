@@ -27,3 +27,4 @@ google-services.json
 *.env
 .env.*
 secrets.properties
+application-local.conf
