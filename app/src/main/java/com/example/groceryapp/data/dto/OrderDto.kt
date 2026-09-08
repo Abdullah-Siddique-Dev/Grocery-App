@@ -9,15 +9,15 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class OrderDto(
     @SerialName("_id")
-    val id: String?,
-    val userId: String,
-    val items: List<OrderItemDto>,
-    val totalAmount: Double,
-    val deliveryAddress: AddressDto,
-    val status: OrderStatus,
+    val id: String? = null,
+    val userId: String = "",
+    val items: List<OrderItemDto> = emptyList(),
+    val totalAmount: Double = 0.0,
+    val deliveryAddress: AddressDto? = null,
+    val status: OrderStatus = OrderStatus.PENDING,
     val paymentMethod: PaymentMethod = PaymentMethod.CASH_ON_DELIVERY,
     val paymentStatus: PaymentStatus = PaymentStatus.PENDING,
-    val placedAt: String
+    val placedAt: String = ""
 )
 
 @Serializable

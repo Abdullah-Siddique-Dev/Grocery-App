@@ -17,21 +17,26 @@ class AuthService(
 ) {
 
     suspend fun register(request: RegisterRequest): Result<AuthResponse> {
-        if (userRepository.findByEmail(request.email) != null) {
+        val cleanEmail = request.email.trim().lowercase()
+        val cleanName = request.name.trim()
+        val cleanPhone = request.phoneNumber.trim()
+        val cleanAddress = request.address.trim()
+
+        if (userRepository.findByEmail(cleanEmail) != null) {
             return Result.failure(Exception("Email already exists"))
         }
 
         val passwordHash = BCrypt.withDefaults().hashToString(12, request.password.toCharArray())
         
         val user = User(
-            name = request.name,
-            email = request.email,
+            name = cleanName,
+            email = cleanEmail,
             passwordHash = passwordHash,
-            phoneNumber = request.phoneNumber,
+            phoneNumber = cleanPhone,
             address = Address(
-                fullName = request.name,
-                phoneNumber = request.phoneNumber,
-                addressLine = request.address,
+                fullName = cleanName,
+                phoneNumber = cleanPhone,
+                addressLine = cleanAddress,
                 city = "",
                 postalCode = ""
             ),
@@ -45,7 +50,8 @@ class AuthService(
     }
 
     suspend fun login(request: LoginRequest): Result<AuthResponse> {
-        val user = userRepository.findByEmail(request.email) ?: return Result.failure(Exception("Invalid email or password"))
+        val cleanEmail = request.email.trim().lowercase()
+        val user = userRepository.findByEmail(cleanEmail) ?: return Result.failure(Exception("Invalid email or password"))
         
         val verification = BCrypt.verifyer().verify(request.password.toCharArray(), user.passwordHash)
         if (!verification.verified) {

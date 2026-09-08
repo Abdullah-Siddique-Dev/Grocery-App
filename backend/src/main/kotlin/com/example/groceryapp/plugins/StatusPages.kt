@@ -17,8 +17,5 @@ fun Application.configureStatusPages() {
         status(HttpStatusCode.NotFound) { call, status ->
             call.respond(status, ErrorResponse("Resource not found"))
         }
-        status(HttpStatusCode.Unauthorized) { call, status ->
-            call.respond(status, ErrorResponse("Unauthorized access"))
-        }
     }
 }

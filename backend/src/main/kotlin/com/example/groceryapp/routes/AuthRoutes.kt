@@ -9,20 +9,22 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+import com.example.groceryapp.plugins.ErrorResponse
+
 fun Route.authRoutes(authService: AuthService) {
     route("/auth") {
         post("/register") {
             val request = call.receive<RegisterRequest>()
             authService.register(request)
                 .onSuccess { call.respond(HttpStatusCode.Created, it) }
-                .onFailure { call.respond(HttpStatusCode.BadRequest, it.message ?: "Registration failed") }
+                .onFailure { call.respond(HttpStatusCode.BadRequest, ErrorResponse(it.message ?: "Registration failed")) }
         }
 
         post("/login") {
             val request = call.receive<LoginRequest>()
             authService.login(request)
                 .onSuccess { call.respond(HttpStatusCode.OK, it) }
-                .onFailure { call.respond(HttpStatusCode.Unauthorized, it.message ?: "Login failed") }
+                .onFailure { call.respond(HttpStatusCode.Unauthorized, ErrorResponse(it.message ?: "Login failed")) }
         }
 
         post("/logout") {

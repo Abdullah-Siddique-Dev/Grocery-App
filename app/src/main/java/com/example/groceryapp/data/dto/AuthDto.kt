@@ -36,18 +36,23 @@ data class AddressDto(
 
 @Serializable
 data class UserDto(
-    @SerialName("_id")
-    val id: String?,
-    val name: String,
-    val email: String,
-    val phoneNumber: String,
+    @SerialName("id")
+    val id: String? = null,
+    val name: String = "",
+    val email: String = "",
+    val phoneNumber: String = "",
     val address: AddressDto? = null,
-    val role: UserRole,
-    val createdAt: String
+    val role: UserRole = UserRole.CUSTOMER,
+    val createdAt: String = ""
 )
 
 @Serializable
 data class UserUpdateRequestDto(
     val name: String,
     val phoneNumber: String
+)
+
+@Serializable
+data class ErrorResponseDto(
+    val message: String
 )

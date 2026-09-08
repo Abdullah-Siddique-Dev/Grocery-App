@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ProductDto(
     @SerialName("_id")
-    val id: String?,
+    val id: String? = null,
     val name: String,
     val description: String,
     val categoryId: String,

@@ -72,7 +72,7 @@ fun OrderDto.toDomain() = Order(
     userId = userId,
     items = items.map { it.toDomain() },
     totalAmount = totalAmount,
-    deliveryAddress = deliveryAddress.toDomain(),
+    deliveryAddress = deliveryAddress?.toDomain() ?: Address(fullName = "", phoneNumber = "", addressLine = "", city = "", postalCode = ""),
     status = status,
     paymentMethod = paymentMethod,
     paymentStatus = paymentStatus,

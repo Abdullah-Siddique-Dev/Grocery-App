@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ReviewDto(
     @SerialName("_id")
-    val id: String?,
+    val id: String? = null,
     val productId: String,
     val userId: String,
     val userName: String,

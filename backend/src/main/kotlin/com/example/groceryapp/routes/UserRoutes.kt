@@ -11,13 +11,15 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+import com.example.groceryapp.models.toDto
+
 fun Route.userRoutes(userService: UserService = UserService()) {
     authenticate("auth-jwt") {
         route("/user/profile") {
             get {
                 val userId = call.principal<JWTPrincipal>()?.subject ?: return@get call.respond(HttpStatusCode.Unauthorized)
                 userService.getUserProfile(userId)
-                    .onSuccess { call.respond(it) }
+                    .onSuccess { call.respond(it.toDto()) }
                     .onFailure { call.respond(HttpStatusCode.NotFound, it.message ?: "User not found") }
             }
 
@@ -25,7 +27,7 @@ fun Route.userRoutes(userService: UserService = UserService()) {
                 val userId = call.principal<JWTPrincipal>()?.subject ?: return@put call.respond(HttpStatusCode.Unauthorized)
                 val request = call.receive<UserUpdateRequest>()
                 userService.updateProfile(userId, request)
-                    .onSuccess { call.respond(it) }
+                    .onSuccess { call.respond(it.toDto()) }
                     .onFailure { call.respond(HttpStatusCode.BadRequest, it.message ?: "Update failed") }
             }
 
@@ -33,7 +35,7 @@ fun Route.userRoutes(userService: UserService = UserService()) {
                 val userId = call.principal<JWTPrincipal>()?.subject ?: return@put call.respond(HttpStatusCode.Unauthorized)
                 val address = call.receive<Address>()
                 userService.updateAddress(userId, address)
-                    .onSuccess { call.respond(it) }
+                    .onSuccess { call.respond(it.toDto()) }
                     .onFailure { call.respond(HttpStatusCode.BadRequest, it.message ?: "Failed to update address") }
             }
 

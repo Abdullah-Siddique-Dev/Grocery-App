@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CartDto(
-    @SerialName("_id")
-    val id: String?,
+    @SerialName("id")
+    val id: String? = null,
     val userId: String,
     val items: List<CartItemDto>,
     val total: Double,

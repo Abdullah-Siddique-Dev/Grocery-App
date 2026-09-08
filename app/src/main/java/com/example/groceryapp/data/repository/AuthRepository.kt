@@ -17,12 +17,30 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+import com.example.groceryapp.data.dto.ErrorResponseDto
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+
 class AuthRepository(
     private val apiClient: ApiClient = ApiClient(InMemoryTokenProvider.getInstance()),
     private val tokenProvider: TokenProvider = InMemoryTokenProvider.getInstance()
 ) {
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: Flow<User?> = _currentUser.asStateFlow()
+
+    private suspend fun parseErrorMessage(response: HttpResponse, defaultMsg: String): String {
+        return try {
+            val errorObj = response.body<ErrorResponseDto>()
+            errorObj.message
+        } catch (e: Exception) {
+            try {
+                val rawText = response.bodyAsText()
+                if (rawText.isNotBlank()) rawText else defaultMsg
+            } catch (e2: Exception) {
+                defaultMsg
+            }
+        }
+    }
 
     suspend fun login(email: String, password: String): Result<User> {
         return try {
@@ -38,7 +56,8 @@ class AuthRepository(
                 _currentUser.value = user
                 Result.success(user)
             } else {
-                Result.failure(Exception("Login failed: ${response.status}"))
+                val errorMsg = parseErrorMessage(response, "Login failed: ${response.status}")
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -65,7 +84,8 @@ class AuthRepository(
                 _currentUser.value = user
                 Result.success(user)
             } else {
-                Result.failure(Exception("Registration failed: ${response.status}"))
+                val errorMsg = parseErrorMessage(response, "Registration failed: ${response.status}")
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Result.failure(e)
