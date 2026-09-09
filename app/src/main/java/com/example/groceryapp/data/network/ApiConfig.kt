@@ -1,6 +1,7 @@
 package com.example.groceryapp.data.network
 
 object ApiConfig {
-    // 192.168.1.8 is the IPv4 address of the host machine for physical device access
-    const val BASE_URL = "http://192.168.1.8:8080"
+    // Use 127.0.0.1 with 'adb reverse tcp:8080 tcp:8080' via USB cable
+    // This bypasses Wi-Fi/Firewall issues.
+    const val BASE_URL = "http://127.0.0.1:8080"
 }
