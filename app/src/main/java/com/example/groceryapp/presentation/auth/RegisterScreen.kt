@@ -1,128 +1,229 @@
 package com.example.groceryapp.presentation.auth
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.groceryapp.ui.components.PrimaryButton
+import com.example.groceryapp.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
     onRegisterSuccess: () -> Unit,
     viewModel: AuthViewModel = viewModel()
 ) {
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
+    val state by viewModel.authState.collectAsState()
+    
+    var nameInput by remember { mutableStateOf("") }
+    var emailInput by remember { mutableStateOf("") }
+    var phoneInput by remember { mutableStateOf("") }
+    var addressInput by remember { mutableStateOf("") }
+    var passwordInput by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
-    val authState by viewModel.authState.collectAsState()
-
-    LaunchedEffect(authState) {
-        if (authState is AuthState.Success) {
+    LaunchedEffect(state) {
+        if (state is AuthState.Success) {
             onRegisterSuccess()
-            viewModel.clearState()
         }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(SurfaceWhite)
+            .verticalScroll(rememberScrollState())
     ) {
-        Text(
-            text = "Register",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Full Name") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = phoneNumber,
-            onValueChange = { phoneNumber = it },
-            label = { Text("Phone Number") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = address,
-            onValueChange = { address = it },
-            label = { Text("Delivery Address") },
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 3
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        if (authState is AuthState.Loading) {
-            CircularProgressIndicator()
-        } else {
-            Button(
-                onClick = { viewModel.register(name, email, password, phoneNumber, address) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Register")
+        // Hero Header
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .clip(RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(EmeraldDeep, EmeraldPrimary)
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Create Account",
+                    style = MaterialTheme.typography.displaySmall.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                )
+                Text(
+                    text = "Join our fresh grocery community",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
             }
         }
 
-        if (authState is AuthState.Error) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
-                text = (authState as AuthState.Error).message,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(top = 8.dp)
+                text = "Get Started",
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                color = TextPrimary,
+                modifier = Modifier.fillMaxWidth()
             )
-        }
+            
+            Spacer(modifier = Modifier.height(32.dp))
 
-        TextButton(onClick = onNavigateToLogin) {
-            Text("Already have an account? Login")
+            // Name Field
+            OutlinedTextField(
+                value = nameInput,
+                onValueChange = { nameInput = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Full Name") },
+                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = EmeraldPrimary) },
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = EmeraldPrimary,
+                    focusedLabelColor = EmeraldPrimary,
+                    unfocusedBorderColor = GrocerySurfaceVariant
+                ),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Email Field
+            OutlinedTextField(
+                value = emailInput,
+                onValueChange = { emailInput = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Email Address") },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = EmeraldPrimary) },
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = EmeraldPrimary,
+                    focusedLabelColor = EmeraldPrimary,
+                    unfocusedBorderColor = GrocerySurfaceVariant
+                ),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Phone Field
+            OutlinedTextField(
+                value = phoneInput,
+                onValueChange = { phoneInput = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Phone Number") },
+                leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null, tint = EmeraldPrimary) },
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = EmeraldPrimary,
+                    focusedLabelColor = EmeraldPrimary,
+                    unfocusedBorderColor = GrocerySurfaceVariant
+                ),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Address Field
+            OutlinedTextField(
+                value = addressInput,
+                onValueChange = { addressInput = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Delivery Address") },
+                leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = EmeraldPrimary) },
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = EmeraldPrimary,
+                    focusedLabelColor = EmeraldPrimary,
+                    unfocusedBorderColor = GrocerySurfaceVariant
+                ),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Password Field
+            OutlinedTextField(
+                value = passwordInput,
+                onValueChange = { passwordInput = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Password") },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = EmeraldPrimary) },
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = null,
+                            tint = TextMuted
+                        )
+                    }
+                },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = EmeraldPrimary,
+                    focusedLabelColor = EmeraldPrimary,
+                    unfocusedBorderColor = GrocerySurfaceVariant
+                ),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            PrimaryButton(
+                text = "Register",
+                onClick = { viewModel.register(nameInput, emailInput, passwordInput, phoneInput, addressInput) },
+                isLoading = state is AuthState.Loading
+            )
+
+            if (state is AuthState.Error) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = (state as AuthState.Error).message,
+                    color = StatusError,
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "Already have an account? ", color = TextSecondary)
+                Text(
+                    text = "Login",
+                    color = EmeraldPrimary,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { onNavigateToLogin() }
+                )
+            }
         }
     }
 }

@@ -1,20 +1,26 @@
 package com.example.groceryapp.presentation.products
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.groceryapp.domain.model.Product
-import com.example.groceryapp.ui.components.ProductImage
+import com.example.groceryapp.presentation.cart.CartViewModel
+import com.example.groceryapp.ui.components.*
+import com.example.groceryapp.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,7 +28,8 @@ fun ProductsScreen(
     categoryId: String?,
     onProductClick: (String) -> Unit,
     onBack: () -> Unit,
-    viewModel: ProductsViewModel = viewModel()
+    viewModel: ProductsViewModel = viewModel(),
+    cartViewModel: CartViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -32,34 +39,70 @@ fun ProductsScreen(
     }
 
     Scaffold(
+        containerColor = FreshBackground,
         topBar = {
-            Column {
-                TopAppBar(title = { Text("Products") })
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { viewModel.onSearchQueryChange(it, categoryId) },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    placeholder = { Text("Search products...") },
-                    singleLine = true
-                )
+            Surface(
+                color = SurfaceWhite,
+                shadowElevation = 2.dp
+            ) {
+                Column {
+                    GroceryTopBar(
+                        title = if (categoryId != null) "Category" else "Search",
+                        showBackButton = true,
+                        onBackClick = onBack
+                    )
+                    GrocerySearchBar(
+                        query = searchQuery,
+                        onQueryChange = { viewModel.onSearchQueryChange(it, categoryId) },
+                        placeholder = "Search for fresh groceries...",
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 16.dp)
+                    )
+                }
             }
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             when (val s = state) {
-                is ProductsState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                is ProductsState.Empty -> Text("No products found", Modifier.align(Alignment.Center))
-                is ProductsState.Error -> Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(s.message, color = MaterialTheme.colorScheme.error)
-                    Button(onClick = { viewModel.loadProducts(categoryId) }) { Text("Retry") }
+                is ProductsState.Loading -> {
+                    ProductsLoadingState()
+                }
+                is ProductsState.Empty -> {
+                    EmptyState(
+                        title = "No products found",
+                        description = "We couldn't find any products matching your search.",
+                        icon = Icons.Default.SearchOff
+                    )
+                }
+                is ProductsState.Error -> {
+                    EmptyState(
+                        title = "Error",
+                        description = s.message,
+                        icon = Icons.Default.Error
+                    )
                 }
                 is ProductsState.Success -> {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(s.products) { product ->
-                            ProductItem(
-                                product = product, 
-                                onClick = { onProductClick(product.id) }
-                            )
+                    Column {
+                        Text(
+                            text = "${s.products.size} Products found",
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                            color = TextSecondary,
+                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
+                        )
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(2),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(s.products) { product ->
+                                ProductCard(
+                                    product = product,
+                                    onProductClick = onProductClick,
+                                    onAddClick = { cartViewModel.addToCart(product) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
                     }
                 }
@@ -69,17 +112,24 @@ fun ProductsScreen(
 }
 
 @Composable
-fun ProductItem(product: Product, onClick: () -> Unit) {
-    ListItem(
-        headlineContent = { Text(product.name) },
-        supportingContent = { Text("${product.price} ${product.unit}") },
-        leadingContent = {
-            ProductImage(
-                imageUrl = product.imageUrl,
-                contentDescription = product.name,
-                modifier = Modifier.size(56.dp)
-            )
-        },
-        modifier = Modifier.clickable { onClick() }
-    )
+fun ProductsLoadingState() {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        repeat(6) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(GrocerySurfaceVariant)
+                )
+            }
+        }
+    }
 }

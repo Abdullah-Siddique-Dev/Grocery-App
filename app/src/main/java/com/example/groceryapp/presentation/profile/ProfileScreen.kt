@@ -1,19 +1,30 @@
 package com.example.groceryapp.presentation.profile
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.groceryapp.domain.model.Address
+import com.example.groceryapp.ui.components.*
+import com.example.groceryapp.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,79 +48,146 @@ fun ProfileScreen(
     }
 
     Scaffold(
+        containerColor = FreshBackground,
         topBar = {
-            TopAppBar(
-                title = { Text("User Profile") },
-                actions = {
-                    IconButton(onClick = { viewModel.logout() }) {
-                        Icon(Icons.Default.Logout, contentDescription = "Logout")
-                    }
-                }
+            GroceryTopBar(
+                title = "My Profile",
+                showBackButton = false // Part of bottom nav
             )
         }
     ) { padding ->
-        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
             when (val s = state) {
-                is ProfileState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                is ProfileState.Error -> Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(s.message, color = MaterialTheme.colorScheme.error)
-                    Button(onClick = { viewModel.loadProfile() }) {
-                        Text("Retry")
+                is ProfileState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = EmeraldPrimary)
                     }
+                }
+                is ProfileState.Error -> {
+                    EmptyState(
+                        title = "Error",
+                        description = s.message,
+                        icon = Icons.Default.Error
+                    )
                 }
                 is ProfileState.Success -> {
                     val user = s.user
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(16.dp)
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                            .verticalScroll(rememberScrollState())
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        ProfileInfoItem(Icons.Default.Person, "Name", user.name)
-                        ProfileInfoItem(Icons.Default.Email, "Email", user.email)
-                        ProfileInfoItem(Icons.Default.Phone, "Phone Number", user.phoneNumber)
-                        
-                        Divider()
-                        
-                        Row(
+                        // Profile Header
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("Delivery Address", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            TextButton(onClick = { showAddressDialog = true }) {
-                                Text(if (user.address == null) "Add Address" else "Edit")
+                            Box(
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .clip(CircleShape)
+                                    .background(EmeraldLight),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = user.name.take(1).uppercase(),
+                                    style = MaterialTheme.typography.displayMedium.copy(
+                                        color = EmeraldPrimary,
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = user.name,
+                                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                                color = TextPrimary
+                            )
+                            Text(
+                                text = user.email,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextSecondary
+                            )
+                        }
+
+                        // Account Settings Section
+                        ProfileSection(title = "Account Information") {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(20.dp),
+                                color = SurfaceWhite
+                            ) {
+                                Column {
+                                    ProfileInfoRow(icon = Icons.Outlined.Person, label = "Full Name", value = user.name)
+                                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = GrocerySurfaceVariant)
+                                    ProfileInfoRow(icon = Icons.Outlined.Email, label = "Email", value = user.email)
+                                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = GrocerySurfaceVariant)
+                                    ProfileInfoRow(icon = Icons.Outlined.Phone, label = "Phone Number", value = user.phoneNumber)
+                                }
+                            }
+                        }
+
+                        // Address Section
+                        ProfileSection(
+                            title = "Delivery Address",
+                            actionText = if (user.address == null) "Add New" else "Edit",
+                            onActionClick = { showAddressDialog = true }
+                        ) {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(20.dp),
+                                color = SurfaceWhite
+                            ) {
+                                Box(modifier = Modifier.padding(20.dp)) {
+                                    user.address?.let { addr ->
+                                        Column {
+                                            Text(addr.fullName, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(addr.addressLine, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                                            Text("${addr.city}, ${addr.postalCode}", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                                        }
+                                    } ?: Text(
+                                        "No address saved yet",
+                                        color = TextMuted,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Logout Button
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .clickable { viewModel.logout() },
+                            shape = RoundedCornerShape(16.dp),
+                            color = StatusError.copy(alpha = 0.1f)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Logout, contentDescription = null, tint = StatusError)
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    "Logout from App", 
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = StatusError
+                                )
                             }
                         }
                         
-                        user.address?.let { addr ->
-                            Column(modifier = Modifier.padding(start = 40.dp)) {
-                                Text(addr.fullName, fontWeight = FontWeight.Medium)
-                                Text(addr.addressLine)
-                                Text("${addr.city}, ${addr.postalCode}")
-                                Text(addr.phoneNumber)
-                            }
-                        } ?: Text(
-                            "No address saved", 
-                            modifier = Modifier.padding(start = 40.dp),
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                        
-                        Spacer(modifier = Modifier.weight(1f))
-                        
-                        Button(
-                            onClick = { viewModel.logout() },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                        ) {
-                            Icon(Icons.Default.Logout, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text("Logout")
-                        }
+                        Spacer(modifier = Modifier.height(40.dp))
                     }
 
                     if (showAddressDialog) {
@@ -130,21 +208,52 @@ fun ProfileScreen(
 }
 
 @Composable
-fun ProfileInfoItem(icon: ImageVector, label: String, value: String) {
+fun ProfileSection(
+    title: String,
+    actionText: String? = null,
+    onActionClick: (() -> Unit)? = null,
+    content: @Composable () -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = TextPrimary
+            )
+            if (actionText != null && onActionClick != null) {
+                TextButton(onClick = onActionClick) {
+                    Text(actionText, color = EmeraldPrimary, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
+                }
+            }
+        }
+        content()
+    }
+}
+
+@Composable
+fun ProfileInfoRow(icon: ImageVector, label: String, value: String) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp)
-        )
+        Surface(
+            modifier = Modifier.size(40.dp),
+            shape = RoundedCornerShape(10.dp),
+            color = FreshBackground
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(icon, contentDescription = null, tint = EmeraldPrimary, modifier = Modifier.size(20.dp))
+            }
+        }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
-            Text(value, style = MaterialTheme.typography.bodyLarge)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+            Text(value, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = TextPrimary)
         }
     }
 }
@@ -163,25 +272,65 @@ fun AddressEditDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delivery Address") },
+        title = { Text("Delivery Address", fontWeight = FontWeight.Bold, color = TextPrimary) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Full Name") })
-                OutlinedTextField(value = phone, onValueChange = { phone = it }, label = { Text("Phone Number") })
-                OutlinedTextField(value = line, onValueChange = { line = it }, label = { Text("Address Line") })
-                OutlinedTextField(value = city, onValueChange = { city = it }, label = { Text("City") })
-                OutlinedTextField(value = zip, onValueChange = { zip = it }, label = { Text("Postal Code") })
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = name, 
+                    onValueChange = { name = it }, 
+                    label = { Text("Full Name") }, 
+                    shape = RoundedCornerShape(12.dp), 
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = EmeraldPrimary)
+                )
+                OutlinedTextField(
+                    value = phone, 
+                    onValueChange = { phone = it }, 
+                    label = { Text("Phone Number") }, 
+                    shape = RoundedCornerShape(12.dp), 
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = EmeraldPrimary)
+                )
+                OutlinedTextField(
+                    value = line, 
+                    onValueChange = { line = it }, 
+                    label = { Text("Address Line") }, 
+                    shape = RoundedCornerShape(12.dp), 
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = EmeraldPrimary)
+                )
+                OutlinedTextField(
+                    value = city, 
+                    onValueChange = { city = it }, 
+                    label = { Text("City") }, 
+                    shape = RoundedCornerShape(12.dp), 
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = EmeraldPrimary)
+                )
+                OutlinedTextField(
+                    value = zip, 
+                    onValueChange = { zip = it }, 
+                    label = { Text("Postal Code") }, 
+                    shape = RoundedCornerShape(12.dp), 
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = EmeraldPrimary)
+                )
             }
         },
         confirmButton = {
-            Button(onClick = {
-                onSave(Address(name, phone, line, city, zip))
-            }) {
-                Text("Save")
-            }
+            PrimaryButton(
+                text = "Save Address", 
+                onClick = {
+                    if (name.isNotBlank() && phone.isNotBlank() && line.isNotBlank()) {
+                        onSave(Address(name, phone, line, city, zip))
+                    }
+                }
+            )
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+                Text("Cancel", color = TextSecondary, textAlign = TextAlign.Center)
+            }
         }
     )
 }
