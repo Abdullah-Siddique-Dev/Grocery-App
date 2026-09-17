@@ -16,8 +16,9 @@ fun Application.module() {
     configureFirebase()
     AppDatabase.init(this)
     
-    // Seed dummy data
+    // Create database indexes and seed data
     launch {
+        AppDatabase.createIndexes()
         SeedData.seedIfNeeded()
     }
 

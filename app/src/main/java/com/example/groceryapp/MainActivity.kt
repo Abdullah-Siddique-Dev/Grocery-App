@@ -14,6 +14,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.Coil
+import com.example.groceryapp.data.image.OptimizedImageLoader
 import com.example.groceryapp.navigation.AppNavigation
 import com.example.groceryapp.navigation.Screen
 import com.example.groceryapp.ui.theme.SmartGroceryAppTheme
@@ -22,6 +24,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Set optimized image loader for maximum performance
+        Coil.setImageLoader(OptimizedImageLoader.create(this))
+        
         setContent {
             SmartGroceryAppTheme {
                 val navController = rememberNavController()
