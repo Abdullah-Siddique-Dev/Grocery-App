@@ -1,0 +1,79 @@
+📂 FILES TO GIVE YOUR AI EDITOR
+================================
+
+Give your AI editor these 2 files:
+
+1. AI_EDITOR_TASK.md (MAIN INSTRUCTIONS)
+   - Contains complete step-by-step task
+   - All code changes needed
+   - Success criteria
+   
+2. FILES_TO_PROVIDE.txt (THIS FILE)
+   - List of files they need to read and modify
+
+---
+
+📝 FILES THEY NEED TO READ (Current State):
+============================================
+
+They need access to these 6 files to make the changes:
+
+ANDROID APP FILES:
+1. app/src/main/java/com/example/groceryapp/navigation/Screen.kt
+2. app/src/main/java/com/example/groceryapp/navigation/AppNavigation.kt
+3. app/src/main/java/com/example/groceryapp/presentation/home/HomeScreen.kt
+4. app/src/main/java/com/example/groceryapp/presentation/profile/ProfileScreen.kt
+5. app/src/main/java/com/example/groceryapp/presentation/orders/OrderDetailsScreen.kt
+
+BACKEND FILE:
+6. backend/src/main/kotlin/com/example/groceryapp/Application.kt
+
+---
+
+📌 NEW SCREENS ALREADY CREATED (Reference Only - No Changes Needed):
+====================================================================
+
+These screens already exist and work perfectly. Just for reference:
+
+✅ app/src/main/java/com/example/groceryapp/presentation/notifications/NotificationsScreen.kt
+✅ app/src/main/java/com/example/groceryapp/presentation/offers/OffersScreen.kt
+✅ app/src/main/java/com/example/groceryapp/presentation/orders/OrderTrackingScreen.kt
+✅ app/src/main/java/com/example/groceryapp/presentation/help/HelpScreen.kt
+✅ backend/src/main/kotlin/com/example/groceryapp/database/SeedData.kt
+
+---
+
+🎯 WHAT TO TELL YOUR AI EDITOR:
+================================
+
+"I need you to connect 4 new screens (Notifications, Offers, OrderTracking, Help) 
+to the app navigation. Please read AI_EDITOR_TASK.md for complete instructions.
+
+You need to modify 6 files total. All the new screens are already created - 
+you just need to add the navigation routes and buttons.
+
+The task should take 15-20 minutes. Please provide the modified files when done."
+
+---
+
+✅ VERIFICATION:
+================
+
+After they complete, you should be able to:
+
+1. Click notification bell on home → See notifications
+2. Click yellow gift icon on home → See offers
+3. Click "Help & Support" on profile → See help screen
+4. Click "Track Order" on order details → See tracking map
+5. Browse products and see 64+ items with beautiful images
+
+---
+
+🚀 THAT'S IT!
+=============
+
+Just give them:
+- AI_EDITOR_TASK.md (main instructions)
+- Access to the 6 files listed above
+
+They have everything they need to complete the integration!

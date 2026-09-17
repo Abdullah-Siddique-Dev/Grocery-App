@@ -30,6 +30,10 @@ import com.example.groceryapp.presentation.orders.OrdersScreen
 import com.example.groceryapp.presentation.products.ProductDetailsScreen
 import com.example.groceryapp.presentation.products.ProductsScreen
 import com.example.groceryapp.presentation.profile.ProfileScreen
+import com.example.groceryapp.presentation.notifications.NotificationsScreen
+import com.example.groceryapp.presentation.offers.OffersScreen
+import com.example.groceryapp.presentation.orders.OrderTrackingScreen
+import com.example.groceryapp.presentation.help.HelpScreen
 import com.example.groceryapp.ui.theme.EmeraldPrimary
 import com.example.groceryapp.ui.theme.TextMuted
 
@@ -164,7 +168,9 @@ fun AppNavigation(navController: NavHostController) {
                     onNavigateToOrders = { navController.navigate(Screen.Orders.route) },
                     onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
                     onNavigateToFavorites = { navController.navigate(Screen.Favorites.route) },
-                    onNavigateToAdmin = { navController.navigate(Screen.AdminDashboard.route) }
+                    onNavigateToAdmin = { navController.navigate(Screen.AdminDashboard.route) },
+                    onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
+                    onNavigateToOffers = { navController.navigate(Screen.Offers.route) }
                 )
             }
             composable(Screen.Categories.route) {
@@ -234,7 +240,10 @@ fun AppNavigation(navController: NavHostController) {
                 val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
                 OrderDetailsScreen(
                     orderId = orderId,
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onNavigateToTracking = { id -> 
+                        navController.navigate(Screen.OrderTracking.createRoute(id)) 
+                    }
                 )
             }
             composable(Screen.Profile.route) {
@@ -244,7 +253,8 @@ fun AppNavigation(navController: NavHostController) {
                             popUpTo(0) { inclusive = true }
                         }
                     },
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onNavigateToHelp = { navController.navigate(Screen.Help.route) }
                 )
             }
             composable(Screen.Favorites.route) {
@@ -253,6 +263,36 @@ fun AppNavigation(navController: NavHostController) {
                         navController.navigate(Screen.ProductDetails.createRoute(productId))
                     },
                     onBack = { navController.popBackStack() }
+                )
+            }
+
+            // New Feature Screens
+            composable(Screen.Notifications.route) {
+                NotificationsScreen(
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.Offers.route) {
+                OffersScreen(
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = Screen.OrderTracking.route,
+                arguments = listOf(navArgument("orderId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val orderId = backStackEntry.arguments?.getString("orderId") ?: ""
+                OrderTrackingScreen(
+                    orderId = orderId,
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.Help.route) {
+                HelpScreen(
+                    onBackClick = { navController.popBackStack() }
                 )
             }
 

@@ -19,6 +19,14 @@ sealed class Screen(val route: String) {
     }
     object Profile : Screen("profile")
     object Favorites : Screen("favorites")
+    
+    // New Feature Screens
+    object Notifications : Screen("notifications")
+    object Offers : Screen("offers")
+    object OrderTracking : Screen("order_tracking/{orderId}") {
+        fun createRoute(orderId: String) = "order_tracking/$orderId"
+    }
+    object Help : Screen("help")
 
     // Admin Screens
     object AdminDashboard : Screen("admin_dashboard")

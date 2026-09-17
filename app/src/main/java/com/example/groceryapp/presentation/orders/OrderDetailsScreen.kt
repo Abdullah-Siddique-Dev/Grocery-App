@@ -31,6 +31,7 @@ import com.example.groceryapp.ui.theme.*
 fun OrderDetailsScreen(
     orderId: String,
     onBack: () -> Unit,
+    onNavigateToTracking: (String) -> Unit = {},
     viewModel: OrderDetailsViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -107,6 +108,17 @@ fun OrderDetailsScreen(
                                         modifier = Modifier.padding(bottom = 20.dp),
                                         color = TextPrimary
                                     )
+                                    
+                                    // Track Order Button (show only for active deliveries)
+                                    if (order.status == OrderStatus.OUT_FOR_DELIVERY || order.status == OrderStatus.CONFIRMED) {
+                                        PrimaryButton(
+                                            text = "Track Order Live",
+                                            onClick = { onNavigateToTracking(orderId) },
+                                            icon = Icons.Default.LocalShipping,
+                                            modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp)
+                                        )
+                                    }
+                                    
                                     OrderStatusTimeline(currentStatus = order.status)
                                 }
                             }

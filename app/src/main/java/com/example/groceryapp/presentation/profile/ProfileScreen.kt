@@ -31,6 +31,7 @@ import com.example.groceryapp.ui.theme.*
 fun ProfileScreen(
     onLogout: () -> Unit,
     onBack: () -> Unit,
+    onNavigateToHelp: () -> Unit = {},
     viewModel: ProfileViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -161,6 +162,32 @@ fun ProfileScreen(
                             }
                         }
 
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Help & Support Button
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .clickable { onNavigateToHelp() },
+                            shape = RoundedCornerShape(16.dp),
+                            color = EmeraldLight
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.HelpOutline, contentDescription = null, tint = EmeraldPrimary)
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    "Help & Support", 
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = EmeraldPrimary
+                                )
+                            }
+                        }
+                        
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Logout Button

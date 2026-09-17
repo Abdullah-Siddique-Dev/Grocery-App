@@ -42,6 +42,8 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToFavorites: () -> Unit,
     onNavigateToAdmin: () -> Unit,
+    onNavigateToNotifications: () -> Unit,
+    onNavigateToOffers: () -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
     val currentUser by viewModel.currentUser.collectAsState(initial = null)
@@ -52,9 +54,10 @@ fun HomeScreen(
         topBar = {
             HomeTopBar(
                 user = currentUser,
-                onNotificationClick = {},
+                onNotificationClick = onNavigateToNotifications,
                 onCartClick = onNavigateToCart,
-                onProfileClick = onNavigateToProfile
+                onProfileClick = onNavigateToProfile,
+                onOffersClick = onNavigateToOffers
             )
         }
     ) { padding ->
@@ -107,8 +110,9 @@ fun HomeScreen(
 fun HomeTopBar(
     user: User?,
     onNotificationClick: () -> Unit,
-    onCartClick: () -> Unit, // Reserved for future use if needed in top bar
-    onProfileClick: () -> Unit
+    onCartClick: () -> Unit,
+    onProfileClick: () -> Unit,
+    onOffersClick: () -> Unit
 ) {
     val greeting = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
         in 0..11 -> "Good morning"
@@ -176,6 +180,21 @@ fun HomeTopBar(
                         Icons.Outlined.Notifications, 
                         contentDescription = "Notifications",
                         tint = TextPrimary
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Surface(
+                modifier = Modifier.size(44.dp).clickable { onOffersClick() },
+                shape = CircleShape,
+                color = AccentAmber.copy(alpha = 0.15f),
+                shadowElevation = 2.dp
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Default.LocalOffer, 
+                        contentDescription = "Offers",
+                        tint = AccentAmber
                     )
                 }
             }
