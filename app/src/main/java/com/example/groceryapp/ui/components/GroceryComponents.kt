@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -130,6 +129,7 @@ fun ProductCard(
     quantityInCart: Int = 0
 ) {
     var isPressed by remember { mutableStateOf(false) }
+    var isFavorite by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
         animationSpec = spring(
@@ -172,46 +172,46 @@ fun ProductCard(
                         .background(GrocerySurfaceVariant)
                 )
                 
-                // Discount/Sale Badge
-                if (product.price < 100) { // Example condition - adjust based on your discount logic
-                    Surface(
-                        modifier = Modifier
-                            .padding(Spacing.xs)
-                            .align(Alignment.TopStart),
-                        color = AccentAmber,
-                        shape = RoundedCornerShape(CornerRadius.xs),
-                        shadowElevation = Elevation.sm
-                    ) {
-                        Text(
-                            text = "SALE",
-                            modifier = Modifier.padding(horizontal = Spacing.xs, vertical = Spacing.xxs),
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold),
-                            color = Color.White
-                        )
-                    }
+                // Discount/Sale Badge - Premium styled
+                Surface(
+                    modifier = Modifier
+                        .padding(Spacing.xs)
+                        .align(Alignment.TopStart),
+                    color = AccentAmber,
+                    shape = RoundedCornerShape(CornerRadius.xs),
+                    shadowElevation = Elevation.sm
+                ) {
+                    Text(
+                        text = "15% OFF",
+                        modifier = Modifier.padding(horizontal = Spacing.xs, vertical = Spacing.xxs),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold),
+                        color = Color.White
+                    )
                 }
                 
-                // Favorite/Wishlist Button (Optional - if feature exists)
-                // Uncomment if favorite functionality is implemented
-                /*
+                // Favorite/Wishlist Heart Icon Button
                 Surface(
                     modifier = Modifier
                         .padding(Spacing.xs)
                         .size(32.dp)
                         .align(Alignment.TopEnd)
-                        .clickable { /* Toggle favorite */ },
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { isFavorite = !isFavorite },
                     shape = CircleShape,
                     color = Color.White.copy(alpha = 0.9f),
                     shadowElevation = Elevation.xs
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
-                        contentDescription = "Add to favorites",
-                        tint = TextMuted,
-                        modifier = Modifier.padding(6.dp)
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Add to favorites",
+                            tint = if (isFavorite) StatusError else TextMuted,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
-                */
             }
 
             Column(modifier = Modifier.padding(Spacing.sm)) {
@@ -228,14 +228,55 @@ fun ProductCard(
                 
                 Spacer(modifier = Modifier.height(Spacing.xxs))
                 
-                // Unit/Quantity Info
-                Text(
-                    text = product.unit,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
-                )
+                // Row for Unit/Quantity and Interactive Star Rating
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = product.unit,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                    
+                    // Rating indicator
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = AccentAmber,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = "4.5",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = TextPrimary
+                        )
+                    }
+                }
                 
-                Spacer(modifier = Modifier.height(Spacing.sm))
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Low Stock / Available Indicator
+                if (product.stockQuantity < 10) {
+                    Text(
+                        text = "Only ${product.stockQuantity} left!",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = StatusError
+                    )
+                } else {
+                    Text(
+                        text = "In Stock",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = EmeraldPrimary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(Spacing.xs))
                 
                 // Price and Add Button Row
                 Row(
@@ -249,21 +290,18 @@ fun ProductCard(
                             text = "$${String.format("%.2f", product.price)}",
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.ExtraBold,
-                                fontSize = 20.sp
+                                fontSize = 18.sp
                             ),
                             color = EmeraldPrimary
                         )
                         
-                        // Show original price if discount exists (example)
-                        if (product.price < 100) {
-                            Text(
-                                text = "$${String.format("%.2f", product.price * 1.25)}",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    textDecoration = TextDecoration.LineThrough
-                                ),
-                                color = TextMuted
-                            )
-                        }
+                        Text(
+                            text = "$${String.format("%.2f", product.price * 1.15)}",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                textDecoration = TextDecoration.LineThrough
+                              ),
+                            color = TextMuted
+                        )
                     }
                     
                     // Add to Cart Button with Animation
@@ -512,7 +550,7 @@ fun SecondaryButton(
             contentColor = EmeraldPrimary,
             disabledContentColor = TextMuted
         ),
-        border = ButtonDefaults.outlinedButtonBorder.copy(
+        border = ButtonDefaults.outlinedButtonBorder(enabled).copy(
             brush = Brush.linearGradient(listOf(EmeraldPrimary, EmeraldPrimary))
         )
     ) {
@@ -985,7 +1023,7 @@ fun OrderCard(
                 StatusBadge(status = status)
             }
             
-            Divider(color = GrocerySurfaceVariant, thickness = 1.dp)
+            HorizontalDivider(color = GrocerySurfaceVariant, thickness = 1.dp)
             
             // Order Info Row
             Row(
