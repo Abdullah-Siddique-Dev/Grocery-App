@@ -3,4 +3,5 @@
 
 Write-Host "Starting backend with local configuration..." -ForegroundColor Cyan
 
+Set-Location $PSScriptRoot
 ./gradlew :backend:run --args="-config=application-local.conf"

@@ -81,7 +81,7 @@ object AppDatabase {
             
             // Compound index for category + availability (common query)
             productsCollection.createIndex(
-                Indexes.compound(
+                Indexes.compoundIndex(
                     Indexes.ascending("categoryId"),
                     Indexes.ascending("isAvailable")
                 )
@@ -105,7 +105,7 @@ object AppDatabase {
             
             // Compound index for user's orders by status (very common)
             ordersCollection.createIndex(
-                Indexes.compound(
+                Indexes.compoundIndex(
                     Indexes.ascending("userId"),
                     Indexes.descending("placedAt")
                 )

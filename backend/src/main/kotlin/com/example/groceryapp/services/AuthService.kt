@@ -6,6 +6,8 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.example.groceryapp.models.*
 import com.example.groceryapp.repositories.UserRepository
 import io.ktor.server.application.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.util.*
 
@@ -26,7 +28,9 @@ class AuthService(
             return Result.failure(Exception("Email already exists"))
         }
 
-        val passwordHash = BCrypt.withDefaults().hashToString(12, request.password.toCharArray())
+        val passwordHash = withContext(Dispatchers.IO) {
+            BCrypt.withDefaults().hashToString(10, request.password.toCharArray())
+        }
         
         val user = User(
             name = cleanName,
@@ -53,8 +57,10 @@ class AuthService(
         val cleanEmail = request.email.trim().lowercase()
         val user = userRepository.findByEmail(cleanEmail) ?: return Result.failure(Exception("Invalid email or password"))
         
-        val verification = BCrypt.verifyer().verify(request.password.toCharArray(), user.passwordHash)
-        if (!verification.verified) {
+        val isPasswordValid = withContext(Dispatchers.IO) {
+            BCrypt.verifyer().verify(request.password.toCharArray(), user.passwordHash).verified
+        }
+        if (!isPasswordValid) {
             return Result.failure(Exception("Invalid email or password"))
         }
 

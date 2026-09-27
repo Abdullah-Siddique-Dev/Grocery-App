@@ -31,14 +31,26 @@ fun AdminDashboardScreen(
     onNavigateToProducts: () -> Unit,
     onNavigateToCategories: () -> Unit,
     onNavigateToUsers: () -> Unit,
+    onLogout: () -> Unit,
     onBack: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            GroceryTopBar(
-                title = "Admin Console",
-                showBackButton = true,
-                onBackClick = onBack
+            TopAppBar(
+                title = { Text("Admin Console", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    if (onBack != onLogout) {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onLogout) {
+                        Icon(Icons.Default.Logout, contentDescription = "Logout", tint = StatusError)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = FreshBackground)
             )
         },
         containerColor = FreshBackground

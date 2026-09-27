@@ -130,16 +130,32 @@ fun AppNavigation(navController: NavHostController) {
             }
         }
     ) { innerPadding ->
+        val tokenProvider = remember { com.example.groceryapp.data.network.InMemoryTokenProvider.getInstance() }
+        val initialStartDestination = remember {
+            val token = tokenProvider.getToken()
+            val role = tokenProvider.getRole()
+            when {
+                token.isNullOrBlank() -> Screen.Login.route
+                role == "ADMIN" -> Screen.AdminDashboard.route
+                else -> Screen.Home.route
+            }
+        }
+
         NavHost(
             navController = navController,
-            startDestination = Screen.Login.route,
+            startDestination = initialStartDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Login.route) {
                 LoginScreen(
                     onNavigateToRegister = { navController.navigate(Screen.Register.route) },
-                    onLoginSuccess = {
-                        navController.navigate(Screen.Home.route) {
+                    onLoginSuccess = { role ->
+                        val targetRoute = if (role == com.example.groceryapp.domain.model.UserRole.ADMIN) {
+                            Screen.AdminDashboard.route
+                        } else {
+                            Screen.Home.route
+                        }
+                        navController.navigate(targetRoute) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     }
@@ -148,8 +164,13 @@ fun AppNavigation(navController: NavHostController) {
             composable(Screen.Register.route) {
                 RegisterScreen(
                     onNavigateToLogin = { navController.navigate(Screen.Login.route) },
-                    onRegisterSuccess = {
-                        navController.navigate(Screen.Home.route) {
+                    onRegisterSuccess = { role ->
+                        val targetRoute = if (role == com.example.groceryapp.domain.model.UserRole.ADMIN) {
+                            Screen.AdminDashboard.route
+                        } else {
+                            Screen.Home.route
+                        }
+                        navController.navigate(targetRoute) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     }
@@ -303,6 +324,12 @@ fun AppNavigation(navController: NavHostController) {
                     onNavigateToProducts = { navController.navigate(Screen.AdminProducts.route) },
                     onNavigateToCategories = { navController.navigate(Screen.AdminCategories.route) },
                     onNavigateToUsers = { navController.navigate(Screen.AdminUsers.route) },
+                    onLogout = {
+                        com.example.groceryapp.data.network.InMemoryTokenProvider.getInstance().clearToken()
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
                     onBack = { navController.popBackStack() }
                 )
             }

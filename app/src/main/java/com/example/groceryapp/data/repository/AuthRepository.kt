@@ -52,6 +52,7 @@ class AuthRepository(
             if (response.status.value in 200..299) {
                 val authResponse = response.body<AuthResponseDto>()
                 tokenProvider.saveToken(authResponse.token)
+                InMemoryTokenProvider.getInstance().saveRole(authResponse.user.role.name)
                 val user = authResponse.user.toDomain()
                 _currentUser.value = user
                 Result.success(user)
@@ -80,6 +81,7 @@ class AuthRepository(
             if (response.status.value in 200..299) {
                 val authResponse = response.body<AuthResponseDto>()
                 tokenProvider.saveToken(authResponse.token)
+                InMemoryTokenProvider.getInstance().saveRole(authResponse.user.role.name)
                 val user = authResponse.user.toDomain()
                 _currentUser.value = user
                 Result.success(user)

@@ -25,6 +25,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
+        // Initialize persistent token provider
+        com.example.groceryapp.data.network.InMemoryTokenProvider.getInstance().init(applicationContext)
+        
         // Set optimized image loader for maximum performance
         Coil.setImageLoader(OptimizedImageLoader.create(this))
         

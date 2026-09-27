@@ -27,9 +27,9 @@ class AuthViewModel(
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             val result = repository.login(email, password)
-            result.onSuccess {
+            result.onSuccess { user ->
                 registerFcmToken()
-                _authState.value = AuthState.Success("Login Successful")
+                _authState.value = AuthState.Success("Login Successful", user.role)
             }.onFailure {
                 _authState.value = AuthState.Error(it.message ?: "Login failed")
             }
@@ -51,9 +51,9 @@ class AuthViewModel(
         viewModelScope.launch {
             _authState.value = AuthState.Loading
             val result = repository.register(name, email, password, phoneNumber, address)
-            result.onSuccess {
+            result.onSuccess { user ->
                 registerFcmToken()
-                _authState.value = AuthState.Success("Registration Successful")
+                _authState.value = AuthState.Success("Registration Successful", user.role)
             }.onFailure {
                 _authState.value = AuthState.Error(it.message ?: "Registration failed")
             }

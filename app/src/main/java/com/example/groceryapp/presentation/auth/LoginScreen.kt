@@ -23,23 +23,90 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.groceryapp.ui.components.PrimaryButton
 import com.example.groceryapp.ui.theme.*
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import com.example.groceryapp.domain.model.UserRole
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (UserRole) -> Unit,
     viewModel: AuthViewModel = viewModel()
 ) {
     val state by viewModel.authState.collectAsState()
+    val context = LocalContext.current
     
     var emailInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var pendingRole by remember { mutableStateOf<UserRole?>(null) }
+    var showLocationPrompt by remember { mutableStateOf(false) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        pendingRole?.let { onLoginSuccess(it) }
+    }
 
     LaunchedEffect(state) {
-        if (state is AuthState.Success) {
-            onLoginSuccess()
+        val currentState = state
+        if (currentState is AuthState.Success) {
+            if (currentState.role == UserRole.ADMIN) {
+                onLoginSuccess(UserRole.ADMIN)
+            } else {
+                val hasFine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                val hasCoarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                if (!hasFine && !hasCoarse) {
+                    pendingRole = currentState.role
+                    showLocationPrompt = true
+                } else {
+                    onLoginSuccess(currentState.role)
+                }
+            }
         }
+    }
+
+    if (showLocationPrompt) {
+        AlertDialog(
+            onDismissRequest = {
+                showLocationPrompt = false
+                pendingRole?.let { onLoginSuccess(it) }
+            },
+            icon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = EmeraldPrimary) },
+            title = { Text("Allow Location Access", fontWeight = FontWeight.Bold) },
+            text = { Text("Smart Grocery uses your location to show available fresh groceries and provide accurate delivery estimates.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showLocationPrompt = false
+                        permissionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            )
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary)
+                ) {
+                    Text("Allow Location")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showLocationPrompt = false
+                        pendingRole?.let { onLoginSuccess(it) }
+                    }
+                ) {
+                    Text("Skip for Now", color = TextSecondary)
+                }
+            }
+        )
     }
 
     Box(

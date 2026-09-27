@@ -26,28 +26,14 @@ class ApiClient(private val tokenProvider: TokenProvider) {
         }
 
         install(Logging) {
-            level = LogLevel.ALL
+            level = LogLevel.INFO
         }
 
-        // Timeout configuration for faster failure detection
+        // Timeouts with generous room for cloud MongoDB Atlas network latency
         install(HttpTimeout) {
-            requestTimeoutMillis = 15_000 // 15 seconds total timeout
-            connectTimeoutMillis = 5_000   // 5 seconds to establish connection
-            socketTimeoutMillis = 15_000   // 15 seconds to read response
-        }
-
-        // Retry failed requests with exponential backoff
-        install(HttpRequestRetry) {
-            maxRetries = 3
-            retryIf { _, response ->
-                // Retry on server errors (500-599)
-                response.status.value in 500..599
-            }
-            retryOnExceptionIf { _, cause ->
-                // Retry on network errors
-                cause is java.io.IOException
-            }
-            exponentialDelay(base = 2.0, maxDelayMs = 10_000)
+            requestTimeoutMillis = 30_000
+            connectTimeoutMillis = 15_000
+            socketTimeoutMillis = 30_000
         }
 
         install(Auth) {
