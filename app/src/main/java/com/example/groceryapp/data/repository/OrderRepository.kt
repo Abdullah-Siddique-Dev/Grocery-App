@@ -8,6 +8,7 @@ import com.example.groceryapp.data.dto.toDto
 import com.example.groceryapp.data.network.ApiClient
 import com.example.groceryapp.data.network.InMemoryTokenProvider
 import com.example.groceryapp.domain.model.Order
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.patch
 import io.ktor.client.request.post

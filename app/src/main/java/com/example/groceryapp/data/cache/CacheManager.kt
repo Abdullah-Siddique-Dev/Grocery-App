@@ -28,7 +28,7 @@ class CacheManager<T> {
     private data class CacheEntry<T>(
         val data: T,
         val timestamp: Long,
-        val ttl: Duration
+        val ttl: Duration,
     ) {
         /**
          * Check if cache entry is still valid based on TTL
@@ -48,7 +48,7 @@ class CacheManager<T> {
      */
     suspend fun get(key: String): T? = mutex.withLock {
         val entry = cache[key]
-        if (entry != null && entry.isValid()) {
+        if ((entry != null) && entry.isValid()) {
             entry.data
         } else {
             // Remove expired entry
@@ -75,8 +75,10 @@ class CacheManager<T> {
      * 
      * @param key Cache key to invalidate
      */
-    suspend fun invalidate(key: String) = mutex.withLock {
-        cache.remove(key)
+    suspend fun invalidate(key: String) {
+        mutex.withLock {
+            cache.remove(key)
+        }
     }
 
     /**
@@ -96,6 +98,7 @@ class CacheManager<T> {
     /**
      * Remove all expired entries
      */
+    @Suppress("unused")
     suspend fun cleanup() = mutex.withLock {
         val expiredKeys = cache.filter { (_, entry) -> !entry.isValid() }.keys
         expiredKeys.forEach { cache.remove(it) }

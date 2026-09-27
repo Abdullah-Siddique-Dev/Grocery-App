@@ -9,6 +9,7 @@ import com.example.groceryapp.data.network.ApiClient
 import com.example.groceryapp.data.network.InMemoryTokenProvider
 import com.example.groceryapp.domain.model.Address
 import com.example.groceryapp.domain.model.User
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put

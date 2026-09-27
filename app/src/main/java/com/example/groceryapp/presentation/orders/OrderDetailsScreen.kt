@@ -110,7 +110,7 @@ fun OrderDetailsScreen(
                                     )
                                     
                                     // Track Order Button (show only for active deliveries)
-                                    if (order.status == OrderStatus.OUT_FOR_DELIVERY || order.status == OrderStatus.CONFIRMED) {
+                                    if (order.status == OrderStatus.SHIPPED || order.status == OrderStatus.CONFIRMED) {
                                         PrimaryButton(
                                             text = "Track Order Live",
                                             onClick = { onNavigateToTracking(orderId) },

@@ -59,12 +59,12 @@ abstract class BaseRepository {
      * @param apiCall Suspend function to fetch data from API
      * @return Flow of Result with data or error
      */
-    protected suspend fun <T, R> fetchWithCache(
+    protected inline fun <T, reified R> fetchWithCache(
         cacheKey: String,
         cache: CacheManager<T>,
         ttl: Duration = 5.minutes,
-        transform: (R) -> T,
-        apiCall: suspend () -> HttpResponse
+        crossinline transform: (R) -> T,
+        crossinline apiCall: suspend () -> HttpResponse
     ): Flow<Result<T>> = flow {
         // Try cache first
         cache.get(cacheKey)?.let {
@@ -98,9 +98,9 @@ abstract class BaseRepository {
      * @param apiCall Suspend function to fetch data from API
      * @return Flow of Result with data or error
      */
-    protected suspend fun <T, R> fetchWithoutCache(
-        transform: (R) -> T,
-        apiCall: suspend () -> HttpResponse
+    protected inline fun <T, reified R> fetchWithoutCache(
+        crossinline transform: (R) -> T,
+        crossinline apiCall: suspend () -> HttpResponse
     ): Flow<Result<T>> = flow {
         try {
             val response = apiCall()
@@ -123,9 +123,9 @@ abstract class BaseRepository {
      * @param apiCall Suspend function for mutation operation
      * @return Flow of Result with data or error
      */
-    protected suspend fun <T, R> postRequest(
-        transform: (R) -> T,
-        apiCall: suspend () -> HttpResponse
+    protected inline fun <T, reified R> postRequest(
+        crossinline transform: (R) -> T,
+        crossinline apiCall: suspend () -> HttpResponse
     ): Flow<Result<T>> = flow {
         try {
             val response = apiCall()
@@ -177,7 +177,7 @@ abstract class BaseRepository {
         return if (filteredParams.isEmpty()) {
             baseKey
         } else {
-            "$baseKey_${filteredParams.joinToString("_") { "${it.first}:${it.second}" }}"
+            "${baseKey}_${filteredParams.joinToString("_") { "${it.first}:${it.second}" }}"
         }
     }
 }
